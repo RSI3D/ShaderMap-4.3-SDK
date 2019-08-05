@@ -1,0 +1,206 @@
+<!-- 
+
+     ===============================================================
+
+	SHADERMAP 4.3 MATERIAL FILE
+			
+          Description: 
+	
+          Example 2: A basic bump map material. 
+          
+		
+	The ShaderMap SDK is released under The MIT License (MIT)
+	http://opensource.org/licenses/MIT
+
+	Copyright (c) 2007-2019 Rendering Systems Inc.
+	
+	Permission is hereby granted, free of charge, to any person 
+	obtaining a copy of this software and associated documentation 
+	files (the "Software"), to deal	in the Software without 
+	restriction, including without limitation the rights to use, 
+	copy, modify, merge, publish, distribute, sublicense, and/or 
+	sell copies of the Software, and to permit persons to whom the 
+	Software is	furnished to do so, subject to the following 
+	conditions:
+
+	The above copyright notice and this permission notice shall be 
+	included in	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+	OF MERCHANTABILITY,	FITNESS FOR A PARTICULAR PURPOSE AND 
+	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+	OTHER DEALINGS IN THE SOFTWARE.
+	
+	Developed by: Neil Kemp at Rendering Systems Inc.
+	
+	E-mail:		support@shadermap.com
+	Online:		http://shadermap.com
+	Corporate:	http://renderingsystems.com
+
+	===============================================================
+	
+ -->
+
+<?xml version="1.0" encoding="utf-8" ?>
+<shadermap_material version="4.3">
+
+     <setup name="Example 2" description="A basic bump map material.">    
+              
+          <lighting is_active="1" />
+                  
+          <world type="matrix" define="w" fx_name="g_world_matrix" />
+          <world type="matrix" define="wvp" fx_name="g_world_view_projection" />
+          <world type="matrix" define="wit" fx_name="g_world_inverse_transpose" />
+        
+          <texture type="map" name="Diffuse Map" desc="Diffuse texture defines base color of material." fx_name="g_diffuse_texture" is_normal="0" is_checkbox="1" />
+          <texture type="map" name="Normal Map" desc="Tangent space normal map is used for bump mapping." fx_name="g_normal_texture" is_normal="1"  is_checkbox="1" />
+          
+     </setup>
+    
+     <fx vsm="2_0" psm="2_a">
+     <![CDATA[    
+    
+     // ==============================================================
+          
+     // Light data
+     int					          	g_light_count;
+     float3				          		g_light_vector_array[4];
+     float3				          		g_light_color_array[4];
+     float                              g_light_specular_array[4];
+     float3				          		g_light_ambient_color;
+     
+     // World data    
+     float4x4                           g_world_matrix;
+     float4x4		                    g_world_view_projection;
+     float4x4		                    g_world_inverse_transpose;
+     
+     // Map data
+     float2                             g_uv_tile;
+     texture                            g_diffuse_texture;
+     texture                            g_normal_texture;
+     float3                             g_normal_texture_coordsys;
+    
+    
+     // Samplers
+     sampler g_diffuse_sampler = 
+     sampler_state
+     {
+          Texture                       = <g_diffuse_texture>;
+     };
+     sampler g_normal_sampler = 
+     sampler_state
+     {
+          Texture                       = <g_normal_texture>;
+     };
+     
+     // I/O structs
+     struct VS_INPUT
+     {
+          float3 position               : POSITION;
+          float3 normal	               	: NORMAL;
+          float2 uv                     : TEXCOORD0;	
+          float4 tangent	            : TANGENT;
+     };     
+    
+     struct VS_OUTPUT
+     {
+          float4 position               : POSITION;
+          float2 uv                     : TEXCOORD0;          
+          float3 world_tangent          : TEXCOORD1;
+          float3 world_binormal         : TEXCOORD2;
+          float3 world_normal           : TEXCOORD3;
+     };    
+     
+     
+     // ==============================================================
+       
+            
+     // Main Vertex shader
+     VS_OUTPUT vs_main(VS_INPUT IN)
+     {
+          // Local data          
+          int                           i;
+          VS_OUTPUT                     OUT;
+            
+          
+          // Store output position and UV
+          OUT.position                  = mul(float4(IN.position, 1.0f), g_world_view_projection);
+          OUT.uv                        = IN.uv * g_uv_tile;          
+          
+          // Store world normal, tangent, binormal
+          OUT.world_normal              = normalize(mul(IN.normal, (float3x3)g_world_inverse_transpose));
+          OUT.world_tangent             = normalize(mul(IN.tangent.xyz, (float3x3)g_world_inverse_transpose));
+          OUT.world_binormal            = cross(OUT.world_normal, OUT.world_tangent) * IN.tangent.w;
+              
+          return OUT;
+     }
+    
+     // Main Pixel (fragment) shader
+     float4 ps_main(VS_OUTPUT IN) : COLOR
+     {
+          // Local data
+          int                           i;
+          float                         n_dot_l;
+          float3                        tn, n, t, b, d, l;
+          float4                        c;
+          
+          
+          // Get texture color
+          c                             = tex2D(g_diffuse_sampler, IN.uv);
+               
+          // Get normalized tangent normal - multiplied by texture coordsys modifier (ensures tangent space vector)
+          tn                            = normalize(tex2D(g_normal_sampler, IN.uv).rgb * 2.0f - 1.0f) * g_normal_texture_coordsys;
+
+          // Get world normal, tangent, binormal
+          n                             = normalize(IN.world_normal);
+          t                             = normalize(IN.world_tangent);
+          b                             = normalize(IN.world_binormal);
+          
+          // Convert tangent normal to world space normal
+          n                             = normalize(n + (tn.x * t + tn.y * b)); 
+                    
+          // Base light color
+          d                             = float3(0.0f, 0.0f, 0.0f);
+          
+          // Calculate diffuse light color          
+          for(i=0; i<g_light_count; i++)
+          {
+               // Light vector
+               l                        = normalize(-g_light_vector_array[i]);
+               
+               // N dot L
+               n_dot_l                  = saturate(dot(n, l));
+               
+               // Add in light
+               d                        += n_dot_l * g_light_color_array[i];
+          }
+                   
+          // Calculate final color and return;
+          c.rgb                         = saturate(c.rgb * saturate(d + g_light_ambient_color));
+          
+          return c;
+     }
+     
+     
+     // ==============================================================
+    
+     // ShaderMap Technique
+     technique shadermap_material
+     { 
+          pass pass_0
+          {
+               VertexShader      		= compile vs_2_0 vs_main();
+               PixelShader       		= compile ps_2_a ps_main();
+          }
+     }
+     
+     // ==============================================================
+
+     ]]>
+     </fx>
+    
+</shadermap_material>

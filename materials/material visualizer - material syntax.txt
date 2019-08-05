@@ -1,0 +1,388 @@
+================================================================================
+
+
+The ShaderMap 4.3 SDK is released under The MIT License (MIT)
+http://opensource.org/licenses/MIT
+
+Copyright (c) 2007-2019 Rendering Systems Inc.
+
+Permission is hereby granted, free of charge, to any person 
+obtaining a copy of this software and associated documentation 
+files (the "Software"), to deal	in the Software without 
+restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or 
+sell copies of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the following 
+conditions:
+
+The above copyright notice and this permission notice shall be 
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+OF MERCHANTABILITY,	FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+OTHER DEALINGS IN THE SOFTWARE.
+
+
+================================================================================
+
+
+SHADERMAP 4.3 : MATERIAL VISUALIZER - MATERIAL XML SYNTAX
+
+The purpose of this document is to provide developers with a method of creating
+their own materials inside the ShaderMap Material Visualizer.
+
+Each material is built from an XML script that sets up material properties 
+and maps.
+
+A Material uses HLSL shaders in a single Direct3D9 Effect file. The effect (FX) 
+file can be embedded in the XML or saved externally and linked to by the XML.
+
+To learn more about DirectX Effect files see the Direct3D9c documentation:
+
+http://msdn.microsoft.com/en-us/library/windows/desktop/bb173329%28v=vs.85%29.aspx
+http://msdn.microsoft.com/en-us/library/windows/desktop/bb206368%28v=vs.85%29.aspx
+
+or just google it: http://www.google.com/search?q=Direct3D9+Effects
+
+To view all of the default ShaderMap materials look in the ShaderMap following
+installation directory, each script is well documented.
+
+<SM_DIRECTORY>\plugins\materials\
+
+
+================================================================================
+
+
+All vertices sent to the vertex shaders use the following structure:
+
+struct VS_INPUT
+{
+     float3 position               : POSITION;
+     float3 normal	               : NORMAL;
+     float2 uv                     : TEXCOORD0;	
+     float4 tangent	               : TANGENT;
+};
+
+
+================================================================================
+
+
+Below is a basic framework for a Material XML file:
+
+
+<?xml version="1.0" encoding="utf-8" ?>
+
+<shadermap_material version="4.3" loc_trans_title="plugin" loc_trans_default_prefix="en" help_filename="materials\plugin_name.txt" help_default_language="en">
+
+   <setup name="Material Name" description="Material Description">
+   
+     ... SETUP ELEMENTS HERE ...
+   
+   </setup>
+   
+   <fx vsm="3_0" psm="3_0">
+   
+   <![CDATA[
+   
+     ... HLSL FX SCRIPT HERE ...
+   
+   ]]>
+   
+   </fx>
+
+</shadermap_material>
+
+
+================================================================================
+
+
+The <shadermap_material> is the main node for a ShaderMap Material. It includes 
+the following attributes:
+
+version                       - The version of the Material File Format, "4.3"
+loc_trans_title               - [OPTIONAL] The title for the localization filename   [prefix].[title].txt (located in res\localization)
+loc_trans_default_prefix      - [OPTIONAL] The prefix for the localization filename  [prefix].[title].txt (located in res\localization)
+help_filename                 - [OPTIONAL] The path to a help file (located in res\localization\help\[help_default_language])
+help_default_language         - [OPTIONAL] The 2 letter country code for the default language
+
+If using localization then you can define strings as using |[LOCALIZATION CODE]| inside of quotations ""
+
+--
+
+The first section of the XML is the SETUP <setup> section. Information in this section
+defines the maps and properties that the material will use.
+
+The "setup" element requires 2 attributes: "name" and "description".
+
+The second section of the XML is the FX section. This section can include an
+entire Direct3D effect script enclosed in the CDATA section or can just be a 
+link to a file in the same directory as the XML.
+
+Attributes for the "fx" element are "vsm", "psm", and "file". vsm is the 
+minimum vertex shader model required by the material. psm is the minimum pixel 
+shader model required. The file attribute is optional, if set the fx is loaded 
+from an external file rather than from the CDATA section. 
+Ex. file="external_shader.fx"
+
+Because ShaderMap uses DirectX 9c the maximum shader model supported is 
+SHADER MODEL 3.
+
+
+================================================================================
+
+
+Next is a description of each element that can be included in the SETUP section:
+
+Each possible value for an attribute may be given as "a | b | c". This means it
+can be only one of the values divided by the pipe '|' character.
+
+
+--
+
+
+<lighting is_active="0 | 1" />
+
+The "lighting" element can be "0" or "1".
+It tells ShaderMap to send lighting info from the Visualizer Light control or
+not. If it is sent then the following constants are sent to the FX shader:
+
+     // Light data
+     int					          g_light_count;
+     float3				          g_light_vector_array[4];
+     float3				          g_light_color_array[4];
+     float                              g_light_specular_array[4];
+     float3				          g_light_ambient_color;
+
+
+--
+
+
+<world type="matrix | vector | position" fx_name="name_of_fx_constant" />
+
+The "world" element can be of type "matrix", "vector", or "position". This
+element tells ShaderMap to send world information about the object it is 
+rendering.
+
+Matrix types are sent to the fx_name as float4x4.
+Vector types are sent to the fx_name as float3.
+Position types are sent to the fx_name as float3.
+
+
+1. The "matrix" type has the additional attribute "define" which defines the matrix 
+to be sent to the fx_name constant. It can be any combination of the following 
+characters:
+
+     'w' World matrix
+     'v' View matrix
+     'p' Projection matrix
+     'r' Rotation matrix
+     'i' Inverse of matrix
+     't' Transpose of matrix
+     
+     Ex. <world type="matrix" define="wvp" fx_name="world_view_projection" />
+     
+Each matrix is multiplied by the next. The inverse and transpose are applied to
+whatever matrix has previously been created.
+     
+A string of "wit" sends the world_inverse_transpose matrix
+A string of "wvp" sends the world_view_projection matrix
+A string of "ri" sends the inversed rotation matrix
+
+Normally there is no scaling in ShaderMap world matrices, all have a scale of 1.
+There is one exception to this and that is in the Dynamic Plane default geometry
+which is scaled along the ration of the material * the tiling of the material.
+
+
+2. The "vector" type has the additional attribute "define" which can be any one
+of the following values:
+
+     "view" The view vector in world space
+     
+     Ex. <world type="vector" define="view" fx_name="view_vector_ws" />
+     
+     
+3. The "position" type has the additional attribute "define" which can be on of
+the following values:
+
+     "eye"     The eye position in world space
+     "target"  The eye target position in world space
+     "object"  The object position in world space
+     
+     Ex. <world type="position" define="object" fx_name="object_position_ws" />
+
+
+--
+
+
+<input type="list | slider | checkbox | color" fx_name="name_of_fx_constant" />
+
+The "input" element defines a property control that will appear in the map
+properties section when that map is selected. This element can be a "list", 
+"slider", "checkbox" or "color" control. Each type has additional attributes
+specific to the type.
+
+Values of the current input are sent to the FX constant defined in "fx_name".
+
+     1. List types are sent to the fx_name as int
+     2. Slider types are sent to the fx_name as int
+     3. Checkbox types are sent to the fx_name as bool
+     4. Color types are sent to the fx_name as float3
+
+
+1. The "list" type has the additional attributes: "prefix", "items", and 
+"default".
+
+     "prefix"  A prefix to the list. A list of colors might use "color: "
+     "items"   A list of strings divided by the ; character. "A;B;C"
+     "default" The default item in the list. A zero based index (integer).
+     
+     Ex. <input type="list" prefix="Pre: " items="A;B;C" default="0" fx_name="my_list" />
+
+
+2. The "slider" type has the additional attributes: "name", "min", "max", and
+"default".
+
+     "name"    The name shown next to the slider control
+     "min"     The minimum value of the slider (integer)
+     "max"     The maximum value of the slider (integer)
+     "default" The default value of the slider (integer)     
+
+     <input type="slider" name="Slide It" min="-300" max="300" default="50" fx_name="my_slider" />
+
+
+3. The "checkbox" type has the additional attributes: "name" and "default"
+
+     "name"    The name shown next to the checkbox control
+     "default" The default state 1 or 0.
+
+     Ex. <input type="checkbox" name="Check It" default="1" fx_name="my_checkbox" />
+     
+     
+4. The "color" type has the additional attributes: "name" and "default"
+
+     "name"    The name shown next to the color control
+     "default" The default color of the control in HEX format.
+     
+     Ex. <input type="color" name="Color It" default="ffffff" fx_name="my_color" />
+
+     
+--
+          
+
+<texture type="map | image | env | env_ir" fx_name="name_of_fx_constant" />
+
+The "texture" element tells ShaderMap to send a texture to ShaderMap. The
+texture can be the following types:
+
+     1. map - The user will need to assign a map to this channel.
+     2. image - An image file (jpeg, bmp, tga, png, etc) located relative to the material file.
+     3. env - The scene environment map. It is an equirectangular map with mipmaps.
+     4. env_ir - The scene environment irradiance map.
+
+If any texture is sent to the shader then the tile constant is sent as well. It
+is a float2 and is always named g_uv_tile. Multiply this by all texture coords
+to get proper tiling.
+
+All textures are sent to the fx_name as texture which should then be used by a
+sampler:
+
+     texture                            g_normal_texture;
+     
+     sampler g_normal_sampler = 
+     sampler_state
+     {
+          Texture                       = <g_normal_texture>;
+     };   
+
+     sampler g_env_sampler = 
+     sampler_state
+     {
+          Texture                       = <g_env_texture>;
+          MipFilter                     = LINEAR;
+          MinFilter                     = LINEAR;
+          MagFilter                     = LINEAR;
+          AddressU                      = WRAP;                  
+          AddressV                      = CLAMP;                 // env and env_ir need to be clamped on V
+     };   
+    
+
+1. The "map" type texture sends a user defined map to the shader. It has the
+additional attributes: "name", "desc", "is_normal", "is_checkbox", and "alt_color".
+
+     "name"         The name of the map required by the shader.
+     "desc"         A description of the map required by the shader.
+     "is_normal"    Can be either 1 or 0. If set to 1 then the map sent should
+                    be a normal map. An additional constant is sent the the FX
+                    shader which contains the coordinate system of the normal
+                    map. It will take the form <fx_name>_coordsys. It is a
+                    float3 vector. It represents the coordinate system relative
+                    to the default tangent space used by ShaderMap. A vector
+                    of (1,1,1) means it is in X = +Right, Y = +Down, Z = +Near.
+                    A value of (1,1,-1) means that Y = +Up
+                    
+                    You might multiply the tangent space normal by the coordsys
+                    constant when extracting from the texture:
+                    
+                    Ex. normalize(tex2D(g_normal_sampler, IN.uv).rgb * 2.0f - 1.0f) * g_normal_texture_coordsys;
+                    
+     "is_checkbox"  Can be 1 or 0. If 1 then a checkbox control will be added
+                    to the properties that allows the user to disable sending 
+                    this texture.
+
+     "alt_color"    [OPTIONAL] A string of 4 bytes representing a default color when a map is not assigned. Ex. "127,127,127,255"
+                    
+                    
+                    Ex. <texture type="map" name="Normal Map" desc="Tangent space normal map is used for bump mapping." fx_name="g_normal_texture" is_normal="1"  is_checkbox="1" />
+
+
+2. The "image" type texture sends an image from file to the shader. It has the
+additional attributes: "name", "file", and "is_checkbox".
+
+     "name"         The name of the image shown only if is_checkbox is 1.
+     "file"         The filename of the image to load as a texture. It is 
+                    relative to the location of the material file.
+                    
+     "is_checkbox"  Can be 1 or 0. If 1 then a checkbox control will be added
+                    to the properties that allows the user to disable sending 
+                    this texture.
+                    
+                    Ex. <texture type="image" file="res\cel\cel.png" name="Cel Texture" fx_name="g_cel_texture" is_checkbox="0" />
+
+
+3. The "env" type texture sends the current scene environment map as a mip mapped equirectangular texture.
+It has the additional attributes: "is_checkbox".
+
+     "is_checkbox"  Can be 1 or 0. If 1 then a checkbox control will be added
+                    to the properties that allows the user to disable sending 
+                    this texture.
+
+                    Ex. <texture type="env" name="Environment Map" fx_name="g_env_texture" is_checkbox="0" />
+
+
+4. The "env_ir" type texture sends the current scene environment irradiance map as an equirectangular texture.
+It has the additional attributes: "is_checkbox".
+
+     "is_checkbox"  Can be 1 or 0. If 1 then a checkbox control will be added
+                    to the properties that allows the user to disable sending 
+                    this texture.
+
+                    Ex. <texture type="env_ir" name="Irradiance Map" fx_name="g_env_ir_texture" is_checkbox="0" />
+
+
+--
+
+
+To sample an equirectangular environment map, use the following HLSL function:
+
+     // Sample an equirectangular environment map - direction is assumed to be normalized
+     float4 get_env_sample(sampler env_map, float3 direction, float mip)
+     {    return tex2Dlod(env_map, float4(float2(atan2(direction.x, direction.z) * 0.159154943091895, acos(direction.y) * 0.318309886183790), 0.0, mip));
+     }
+
+
+================================================================================

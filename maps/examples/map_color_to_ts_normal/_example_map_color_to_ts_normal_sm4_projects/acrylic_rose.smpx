@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<shadermap_project>
+    <header>
+        <version v="4;1;1" />
+        <node_count v="2" />
+        <node_cur_sel v="1" />
+        <user_project_grid_col_count v="0" />
+        <material_count v="1" />
+        <map_mask_count v="0" />
+        <disp_pattern_count v="0" />
+        <default_geo_count v="4" />
+        <user_geo_count v="0" />
+        <geo_max_instance_count v="10" />
+        <last_open_directory v="C:\Users\Neil\Desktop" />
+        <last_save_directory v="C:\Users\Neil\Desktop" />
+        <map_normal_radar_sample_count v="360" />
+    </header>
+    <node_0>
+        <project_grid_col v="0" />
+        <project_grid_row v="0" />
+        <node_type v="1" />
+        <is_auto_render v="1" />
+        <channel_toggle_state v="15" />
+        <is_embed_in_texture v="0" />
+        <is_embed_on_export v="1" />
+        <plugin_file_name v="src_color_texture.smp" />
+        <plugin_version v="101" />
+        <plugin_type v="0" />
+        <is_locked v="0" />
+        <output_file_path v="" />
+        <output_format v="18" />
+        <map_mask i="-1" f="" />
+        <prop_count v="2" />
+        <prop_page_counts v="2;" />
+        <prop_0 type="3" value="0" />
+        <prop_1 type="7" value="0" />
+        <coord_system v="0" />
+        <tile_type v="0" />
+        <source_file_path v="acrylic_rose.jpg" />
+        <pre_filter_count v="0" />
+        <post_filter_count v="0" />
+        <n_editor_layer_count v="0" />
+    </node_0>
+    <node_1>
+        <project_grid_col v="1" />
+        <project_grid_row v="1" />
+        <node_type v="1" />
+        <is_auto_render v="1" />
+        <channel_toggle_state v="15" />
+        <is_embed_in_texture v="0" />
+        <is_embed_on_export v="1" />
+        <plugin_file_name v="example_map_color_to_ts_normal.smp" />
+        <plugin_version v="101" />
+        <plugin_type v="1" />
+        <is_locked v="0" />
+        <output_file_path v="" />
+        <output_format v="18" />
+        <input_count v="1" />
+        <input_index_list v="0" />
+        <map_mask i="-1" f="" />
+        <prop_count v="3" />
+        <prop_page_counts v="3;" />
+        <prop_0 type="7" value="100" />
+        <prop_1 type="2" value="1" />
+        <prop_2 type="2" value="0" />
+        <coord_system v="26" />
+        <tile_type v="0" />
+        <pre_filter_count v="0" />
+        <post_filter_count v="0" />
+        <n_editor_layer_count v="0" />
+    </node_1>
+    <material_0>
+        <file_name v="0.standard.xml" />
+        <material_grid_position v="0" />
+        <map_index_list v="-1;1;-1;-1;-1;-1" />
+        <is_flip_u v="0" />
+        <is_flip_v v="0" />
+        <tile_u v="1.00000" />
+        <tile_v v="1.00000" />
+        <prop_count v="9" />
+        <prop_0 fx_name="g_shininess" type="4" value="90" />
+        <prop_1 fx_name="g_specular_intensity" type="4" value="35" />
+        <prop_2 fx_name="" type="1" map_fx_name="g_diffuse_texture" value="1" />
+        <prop_3 fx_name="" type="1" map_fx_name="g_normal_texture" value="1" />
+        <prop_4 fx_name="" type="1" map_fx_name="g_specular_texture" value="1" />
+        <prop_5 fx_name="" type="1" map_fx_name="g_ao_texture" value="1" />
+        <prop_6 fx_name="g_is_reflection" type="0" value="0" />
+        <prop_7 fx_name="g_reflection_intensity" type="4" value="300" />
+        <prop_8 fx_name="g_is_reflection_hardlight" type="0" value="0" />
+    </material_0>
+    <default_geo_0>
+        <name v="Sphere" />
+        <is_tessellated v="0" />
+        <instance_count v="1" />
+        <distance_offset v="0" />
+        <cur_sel_instance v="-1" />
+        <cur_sel_material_grid_position v="-1" />
+        <material_index_list v="-1;-1;-1;-1;-1;-1;-1;-1;-1;-1" />
+        <rotation_array v="0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000" />
+    </default_geo_0>
+    <default_geo_1>
+        <name v="Cylinder" />
+        <is_tessellated v="0" />
+        <instance_count v="1" />
+        <distance_offset v="0" />
+        <cur_sel_instance v="-1" />
+        <cur_sel_material_grid_position v="-1" />
+        <material_index_list v="-1;-1;-1;-1;-1;-1;-1;-1;-1;-1" />
+        <rotation_array v="0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000" />
+    </default_geo_1>
+    <default_geo_2>
+        <name v="Cube" />
+        <is_tessellated v="0" />
+        <instance_count v="1" />
+        <distance_offset v="0" />
+        <cur_sel_instance v="-1" />
+        <cur_sel_material_grid_position v="-1" />
+        <material_index_list v="-1;-1;-1;-1;-1;-1;-1;-1;-1;-1" />
+        <rotation_array v="0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000" />
+    </default_geo_2>
+    <default_geo_3>
+        <name v="Dynamic Plane" />
+        <is_tessellated v="0" />
+        <instance_count v="1" />
+        <distance_offset v="0" />
+        <cur_sel_instance v="-1" />
+        <cur_sel_material_grid_position v="0" />
+        <material_index_list v="0;-1;-1;-1;-1;-1;-1;-1;-1;-1" />
+        <rotation_array v="0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000;0.00000000,0.00000000,0.00000000,1.00000000" />
+    </default_geo_3>
+    <matviz_settings>
+        <editor_state v="1" />
+        <geo_cur_sel v="3" />
+        <camera_orientation v="0.00000000;0.00000000;0.00000000;164.00000000;180.00000000;0.00000000;164.00000000" />
+        <light_ambient v="986895" />
+        <light_count v="3" />
+        <light_0 color="14803425" rotation="-0.34212449;0.47741574;-0.19377574;0.78579646" />
+        <light_1 color="2105386" rotation="-0.12333662;-0.55830216;-0.08437912;0.81606799" />
+        <light_2 color="4136713" rotation="-0.12333662;0.55830216;0.08437912;0.81606799" />
+        <cur_env_filename v="Studio" />
+        <is_render_env v="0" />
+        <env_blur v="0.00000" />
+        <env_user_filename v="" />
+        <screen_shot_filepath v="C:\Users\Neil\Desktop\Metalness" />
+        <screen_shot_file_type v="2" />
+        <screen_shot_append_type v="0" />
+        <screen_shot_is_show_controls v="0" />
+    </matviz_settings>
+</shadermap_project>

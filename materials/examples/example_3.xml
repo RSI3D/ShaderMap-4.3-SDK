@@ -1,0 +1,172 @@
+<!-- 
+
+     ===============================================================
+
+	SHADERMAP 4.3 MATERIAL FILE
+			
+          Description: 
+	
+          Example 3: A basic environment map sampling material with
+          			 a blur slider.
+          
+		
+	The ShaderMap SDK is released under The MIT License (MIT)
+	http://opensource.org/licenses/MIT
+
+	Copyright (c) 2007-2019 Rendering Systems Inc.
+	
+	Permission is hereby granted, free of charge, to any person 
+	obtaining a copy of this software and associated documentation 
+	files (the "Software"), to deal	in the Software without 
+	restriction, including without limitation the rights to use, 
+	copy, modify, merge, publish, distribute, sublicense, and/or 
+	sell copies of the Software, and to permit persons to whom the 
+	Software is	furnished to do so, subject to the following 
+	conditions:
+
+	The above copyright notice and this permission notice shall be 
+	included in	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+	OF MERCHANTABILITY,	FITNESS FOR A PARTICULAR PURPOSE AND 
+	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+	OTHER DEALINGS IN THE SOFTWARE.
+	
+	Developed by: Neil Kemp at Rendering Systems Inc.
+	
+	E-mail:		support@shadermap.com
+	Online:		http://shadermap.com
+	Corporate:	http://renderingsystems.com
+
+	===============================================================
+	
+ -->
+
+<?xml version="1.0" encoding="utf-8" ?>
+<shadermap_material version="4.3">
+
+     <setup name="Example 3" description="A basic environment map sampling material.">    
+              
+          <lighting is_active="1" />
+                  
+          <world type="matrix" define="w" fx_name="g_world_matrix" />
+          <world type="matrix" define="wvp" fx_name="g_world_view_projection" />
+          <world type="matrix" define="wit" fx_name="g_world_inverse_transpose" />
+
+          <input type="slider" name="Blur" min="0" max="100" default="0" fx_name="g_blur" />
+        
+          <texture type="env" name="Environment Map" fx_name="g_env_texture" is_checkbox="1" /> 
+          
+     </setup>
+    
+     <fx vsm="3_0" psm="3_0">
+     <![CDATA[
+    
+     // ==============================================================
+
+
+     // Global constants
+     static const float 				MIP_MAX	= 9.0;
+          
+     // Light data
+     int					          	g_light_count;
+     float3				   				g_light_vector_array[4];
+     float3				          		g_light_color_array[4];
+     float                              g_light_specular_array[4];
+     float3				          		g_light_ambient_color;
+     
+     // World data    
+     float4x4                           g_world_matrix;
+     float4x4		                    g_world_view_projection;
+     float4x4		                    g_world_inverse_transpose;
+
+     // Property data
+     int 								g_blur;
+     
+     // Map data
+     float2                             g_uv_tile;
+     texture                            g_env_texture;
+    
+     // Samplers
+     sampler g_env_sampler = 
+     sampler_state
+     {    Texture                       = <g_env_texture>;
+          MipFilter                     = LINEAR;
+          MinFilter                     = LINEAR;
+          MagFilter                     = LINEAR;
+          AddressU                      = WRAP;
+          AddressV                      = CLAMP;
+     };
+     
+     // I/O structs
+     struct VS_INPUT
+     {
+          float3 position               : POSITION;
+          float3 normal	               	: NORMAL;
+          float2 uv                     : TEXCOORD0;	
+          float4 tangent	        	: TANGENT;
+     };     
+    
+     struct VS_OUTPUT
+     {
+          float4 position               : POSITION;
+          float2 uv                     : TEXCOORD0;
+          float3 normal                 : TEXCOORD1;
+     };    
+     
+     
+     // ==============================================================
+       
+            
+     // Main Vertex shader
+     VS_OUTPUT vs_main(VS_INPUT IN)
+     {
+          // Local data          
+          int                           i;
+          VS_OUTPUT                     OUT;
+            
+          
+          // Store output position, UV, and normal
+          OUT.position                  = mul(float4(IN.position, 1.0f), g_world_view_projection);
+          OUT.uv                        = IN.uv * g_uv_tile; 
+          OUT.normal                    = normalize(mul(IN.normal, (float3x3)g_world_inverse_transpose));
+              
+          return OUT;
+     }
+
+     // Local function for the pixel shader
+
+     // Sample an equirectangular environment map - direction is assumed to be normalized
+     float4 get_env_sample(sampler env_map, float3 direction, float mip)
+     {    return tex2Dlod(env_map, float4(float2(atan2(direction.x, direction.z) * 0.159154943091895, acos(direction.y) * 0.318309886183790), 0.0, mip));
+     }
+    
+     // Main Pixel (fragment) shader
+     float4 ps_main(VS_OUTPUT IN) : COLOR
+     {
+          return get_env_sample(g_env_sampler, IN.normal, g_blur / 100.0 * MIP_MAX);
+     }
+     
+     
+     // ==============================================================
+    
+     // ShaderMap Technique
+     technique shadermap_material
+     { 
+          pass pass_0
+          {
+               VertexShader      		= compile vs_3_0 vs_main();
+               PixelShader       		= compile ps_3_0 ps_main();
+          }
+     }
+     
+     // ==============================================================
+
+     ]]>
+     </fx>
+    
+</shadermap_material>

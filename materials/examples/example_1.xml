@@ -1,0 +1,154 @@
+<!-- 
+
+     ===============================================================
+
+	SHADERMAP 4.3 MATERIAL FILE
+			
+          Description: 
+	
+          Example 1: A basic material that takes a color and color
+          texture as input. 
+          	
+               
+	The ShaderMap SDK is released under The MIT License (MIT)
+	http://opensource.org/licenses/MIT
+
+	Copyright (c) 2007-2019 Rendering Systems Inc.
+	
+	Permission is hereby granted, free of charge, to any person 
+	obtaining a copy of this software and associated documentation 
+	files (the "Software"), to deal	in the Software without 
+	restriction, including without limitation the rights to use, 
+	copy, modify, merge, publish, distribute, sublicense, and/or 
+	sell copies of the Software, and to permit persons to whom the 
+	Software is	furnished to do so, subject to the following 
+	conditions:
+
+	The above copyright notice and this permission notice shall be 
+	included in	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+	OF MERCHANTABILITY,	FITNESS FOR A PARTICULAR PURPOSE AND 
+	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+	OTHER DEALINGS IN THE SOFTWARE.
+
+	Developed by: Neil Kemp at Rendering Systems Inc.
+	
+	E-mail:		support@shadermap.com
+	Online:		http://shadermap.com
+	Corporate:	http://renderingsystems.com
+
+	===============================================================
+	
+ -->
+
+<?xml version="1.0" encoding="utf-8" ?>
+<shadermap_material version="4.3">
+
+     <setup name="Example 1" description="A basic material that takes a color and color texture as input.">    
+              
+          <lighting is_active="0" />
+                  
+          <world type="matrix" define="wvp" fx_name="g_world_view_projection" />
+        
+          <input type="color" name="Base Color" default="ffffff" fx_name="g_base_color" />
+          
+          <texture type="map" name="Color Map" desc="A color texture." fx_name="g_color_texture" is_normal="0"  is_checkbox="1" />
+          
+     </setup>
+    
+     <fx vsm="2_0" psm="2_0">
+     <![CDATA[    
+    
+     // ==============================================================
+          
+     // World data    
+     float4x4		                    g_world_view_projection;
+         
+     // Input data     
+     float3                             g_base_color;
+    
+     // Map data
+     float2                             g_uv_tile;     
+     texture                            g_color_texture;
+     
+     
+     // Samplers    
+     sampler g_color_sampler = 
+     sampler_state
+     {
+          Texture                       = <g_color_texture>;
+     };
+    
+     // I/O structs
+     struct VS_INPUT
+     {
+          float3 position         		: POSITION;
+          float3 normal	        		: NORMAL;
+          float2 uv                     : TEXCOORD0;	
+          float4 tangent	      		: TANGENT;
+     };
+     
+    
+     struct VS_OUTPUT
+     {
+          float4 position               : POSITION;
+          float2 uv                     : TEXCOORD0;          
+     };    
+    
+    
+     // ==============================================================
+       
+            
+     // Main Vertex shader
+     VS_OUTPUT vs_main(VS_INPUT IN)
+     {
+          // Local data
+          VS_OUTPUT                     OUT;
+            
+          
+          // Store output position and UV
+          OUT.position                  = mul(float4(IN.position, 1.0f), g_world_view_projection);
+          OUT.uv                        = IN.uv * g_uv_tile;
+                    
+          
+          return OUT;
+     }
+    
+     // Main Pixel (fragment) shader
+     float4 ps_main(VS_OUTPUT IN) : COLOR
+     {
+          // Local data
+          float4                        c;
+          
+          
+          // Get color of texture then multiply base color to RGB channels
+          c                             = tex2D(g_color_sampler, IN.uv);          
+          c.rgb                         *= g_base_color;
+          
+          return c;
+     }
+     
+     
+     // ==============================================================
+    
+     // ShaderMap Technique
+     technique shadermap_material
+     { 
+          pass pass_0
+          {
+               VertexShader      		= compile vs_2_0 vs_main();
+               PixelShader       		= compile ps_2_0 ps_main();
+          }
+     }
+     
+     // ==============================================================
+
+     ]]>
+     </fx>
+    
+</shadermap_material>
